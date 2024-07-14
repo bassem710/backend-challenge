@@ -8,6 +8,7 @@ CREATE TABLE "user" (
   "role" roles_enum DEFAULT 'user',
   verification_code VARCHAR(255),
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  token varchar(1000),
   UNIQUE(email)
 );
 
