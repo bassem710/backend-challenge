@@ -5,7 +5,7 @@ const express = require("express");
 const compression = require("compression");
 
 // Routes
-const AdminAuthRoutes = require("./adminAuth.route");
+const AuthRoutes = require("./auth.route");
 
 // Error Handling imports
 const ApiError = require("../utils/ApiError");
@@ -20,7 +20,7 @@ module.exports = (app) => {
   app.use(morgan("dev"));
   app.use(express.json({ limit: "25kb" }));
   // Routes
-  app.use("/api/v1/admin", AdminAuthRoutes);
+  app.use("/api/v1/auth", AuthRoutes);
   // Not Found Route
   app.all("*", (req, res, next) => {
     next(new ApiError(`This Route (${req.originalUrl}) is not found`, 400));

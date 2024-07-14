@@ -3,8 +3,8 @@ const asyncHandler = require("express-async-handler");
 const joiErrorHandler = require("./joiErrorHandler");
 
 class AdminValidator {
-  // Validate verify admin account fields
-  static validateVerifyAdmin = asyncHandler(async (req, res, next) => {
+  // Validate verify account fields
+  static validateVerifyAccount = asyncHandler(async (req, res, next) => {
     const schema = Joi.object({
       code: Joi.string()
         .length(6)

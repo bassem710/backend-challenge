@@ -1,16 +1,20 @@
 const asyncHandler = require("express-async-handler");
+
 const pool = require("../config/pool.config");
+const CodeGenerator = require("../utils/codeGenerator");
+
 const ApiError = require("../utils/ApiError");
 const EmailHandler = require("../utils/email.handler");
-const CodeGenerator = require("../utils/codeGenerator");
 const JwtHandler = require("../utils/jwtHandler");
 const Hasher = require("../utils/hasher");
 
-class AdminAuthController {
-  // @desc    Admins & super admins login
-  // @route   POST /admin/login
+const { USER } = require("../utils/constants");
+
+class AuthController {
+  // @desc    login
+  // @route   POST /auth/login
   // @access  Public
-  static adminLogin = asyncHandler(async (req, res, next) => {
+  static login = asyncHandler(async (req, res, next) => {
     const { email, password } = req.body;
     // Query to find user by email
     const loginQuery = `SELECT * FROM "user" WHERE email = $1;`;
@@ -28,7 +32,9 @@ class AdminAuthController {
       );
       // Send verification email and update verification token concurrently
       await Promise.all([
-        EmailHandler.adminAccountMail(code, email),
+        user.role === USER
+          ? EmailHandler.userAccountMail(code, email)
+          : EmailHandler.adminAccountMail(code, email),
         pool.query(`UPDATE "user" SET verification_code = $1 WHERE id = $2;`, [
           hashedCode,
           user.id,
@@ -67,14 +73,15 @@ class AdminAuthController {
       success: true,
       message: `Logged in successfully as ${user.email}`,
       userData,
+      role: user.role,
       token: token,
     });
   });
 
-  // @desc    Admins & super verification
-  // @route   POST /admin/verify
+  // @desc    Account verification
+  // @route   POST /auth/verify
   // @access  Public
-  static adminVerification = asyncHandler(async (req, res, next) => {
+  static AccountVerification = asyncHandler(async (req, res, next) => {
     const { code, password } = req.body;
     // Hash the provided code
     const hashedCode = await Hasher.hashCode(code);
@@ -99,10 +106,10 @@ class AdminAuthController {
     });
   });
 
-  // @desc    Admins & super logout
-  // @route   DELETE /admin/logout
-  // @access  Private (Super admin & Admin)
-  static adminLogout = asyncHandler(async (req, res, next) => {
+  // @desc    logout
+  // @route   DELETE /auth/logout
+  // @access  Private (All)
+  static logout = asyncHandler(async (req, res, next) => {
     // Remove user token
     await pool.query(`UPDATE "user" SET token = NULL WHERE id = $1;`, [
       req.user.id,
@@ -115,4 +122,4 @@ class AdminAuthController {
   });
 }
 
-module.exports = AdminAuthController;
+module.exports = AuthController;
