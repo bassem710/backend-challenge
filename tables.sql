@@ -4,7 +4,7 @@ CREATE TABLE "user" (
   id SERIAL PRIMARY KEY,
   "name" VARCHAR(255) NOT NULL,
   email VARCHAR(255) NOT NULL,
-  "password" VARCHAR(255) NOT NULL,
+  "password" VARCHAR(255),
   "role" roles_enum DEFAULT 'user',
   verification_code VARCHAR(255),
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
