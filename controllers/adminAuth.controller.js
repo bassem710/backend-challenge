@@ -70,6 +70,34 @@ class AdminAuthController {
       token: token,
     });
   });
+
+  // @desc    Admins & super verification
+  // @route   POST /admin/verify
+  // @access  Public
+  static adminVerification = asyncHandler(async (req, res, next) => {
+    const { code, password } = req.body;
+    // Hash the provided code
+    const hashedCode = await Hasher.hashCode(code);
+    // Query to find user by verification code
+    const verificationQuery = `SELECT * FROM "user" WHERE verification_code = $1;`;
+    const {
+      rowCount: userFound,
+      rows: [user],
+    } = await pool.query(verificationQuery, [hashedCode]);
+    // If user is not found or not verified
+    if (!userFound)
+      return next(new ApiError("Invalid verification code!", 401));
+    // Update user password & remove verification code
+    await pool.query(
+      `UPDATE "user" SET password = $1, verification_code = NULL WHERE id = $2;`,
+      [password, user.id]
+    );
+    // Return success message
+    return res.status(200).json({
+      success: true,
+      message: `Account verified successfully`,
+    });
+  });
 }
 
 module.exports = AdminAuthController;

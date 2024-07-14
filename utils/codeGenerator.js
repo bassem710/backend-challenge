@@ -1,6 +1,6 @@
 const asyncHandler = require("express-async-handler");
 const pool = require("../config/pool.config");
-const { hashPassword } = require("./hasher");
+const { hashCode } = require("./hasher");
 
 // Function to generate a random code and check for duplicates in the database
 exports.generateHashedCode = asyncHandler(async (tableName, columnName) => {
@@ -16,7 +16,7 @@ const generateRandomHashedCode = asyncHandler(async (tableName, columnName) => {
   // Generate a random six-digit code
   const code = Math.floor(100000 + Math.random() * 900000);
   // hash the code as passwords to save it the database
-  const hashed = await hashPassword(code);
+  const hashed = await hashCode(code);
   // Check if the generated code already exists in the database
   const { rowCount: found } = await pool.query(
     `SELECT 1 AS count FROM ${tableName} WHERE ${columnName} = $1`,

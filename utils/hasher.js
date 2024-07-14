@@ -1,4 +1,6 @@
+const asyncHandler = require("express-async-handler");
 const bcrypt = require("bcrypt");
+const crypto = require("crypto");
 
 class Hasher {
   static async hashPassword(password) {
@@ -6,11 +8,11 @@ class Hasher {
     return await bcrypt.hash(password?.toString(), salt);
   }
 
-  static async hashPasswordMiddleware(req, res, next) {
+  static hashPasswordMiddleware = asyncHandler(async (req, res, next) => {
     req.body.rawPassword = req.body.password;
-    req.body.password = this.hashPassword(req.body.password);
+    req.body.password = await this.hashPassword(req.body.password);
     next();
-  }
+  });
 
   static comparePassword(password, hash) {
     return bcrypt.compareSync(password, hash);
@@ -19,6 +21,13 @@ class Hasher {
   static async generatePassword() {
     const password = Math.random().toString(36).slice(-8);
     return password;
+  }
+
+  static async hashCode(code) {
+    return await crypto
+      .createHash("sha256")
+      .update(code?.toString())
+      .digest("hex");
   }
 }
 
