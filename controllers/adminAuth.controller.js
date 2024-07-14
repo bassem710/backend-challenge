@@ -98,6 +98,21 @@ class AdminAuthController {
       message: `Account verified successfully`,
     });
   });
+
+  // @desc    Admins & super logout
+  // @route   DELETE /admin/logout
+  // @access  Private (Super admin & Admin)
+  static adminLogout = asyncHandler(async (req, res, next) => {
+    // Remove user token
+    await pool.query(`UPDATE "user" SET token = NULL WHERE id = $1;`, [
+      req.user.id,
+    ]);
+    // Return success message
+    return res.status(200).json({
+      success: true,
+      message: "Logged out successfully",
+    });
+  });
 }
 
 module.exports = AdminAuthController;

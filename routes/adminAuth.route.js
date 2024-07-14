@@ -21,4 +21,11 @@ router.post(
   AdminAuthController.adminVerification
 );
 
+router.delete(
+  "/logout",
+  protect,
+  allowedTo(SUPER_ADMIN, ADMIN),
+  AdminAuthController.adminLogout
+);
+
 module.exports = router;
