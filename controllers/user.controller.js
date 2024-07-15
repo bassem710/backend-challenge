@@ -139,6 +139,9 @@ class UserController {
     });
   });
 
+  // @desc    Get Top 3 users with highest login frequency
+  // @route   GET /user/top3
+  // @access  Private (Super Admin & Admin)
   static getTopUsersLoginFrequency = asyncHandler(async (req, res, next) => {
     const query = `
       SELECT 
