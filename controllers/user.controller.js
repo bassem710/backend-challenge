@@ -139,6 +139,33 @@ class UserController {
     });
   });
 
+  // @desc    Update user data by id
+  // @route   PATCH /user/:id
+  // @access  Private (All based on token role)
+  static updateUser = asyncHandler(async (req, res, next) => {
+    // User id could be sent in parmas if admin or set by user token in the previous middleware based on the logged in token
+    const userId = req.params.id;
+    const { name, email } = req.body;
+    // Query to update user
+    const updateQuery = `
+      UPDATE "user"
+      SET name = $1, email = $2
+      WHERE id = $3 AND role = $4
+      RETURNING id, name, email, is_verified, created_at;
+    `;
+    const {
+      rowCount: updated,
+      rows: [updatedUser],
+    } = await pool.query(updateQuery, [name, email, userId, USER]);
+    // Check user
+    if (!updated) return next(new ApiError("User not found", 404));
+    // Response
+    res.status(200).json({
+      success: true,
+      data: updatedUser,
+    });
+  });
+
   // @desc    Delete user by id
   // @route   DELETE /user/:id
   // @access  Private (Super Admin & Admin)

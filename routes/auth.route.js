@@ -6,6 +6,7 @@ const { SUPER_ADMIN, ADMIN, USER } = require("../utils/constants.js");
 // Controller Classes
 const AuthController = require("../controllers/auth.controller.js");
 const AuthValidator = require("../validators/admin.validator.js");
+const UserValidator = require("../validators/user.validator.js");
 const Hasher = require("../utils/hasher.js");
 
 // Middlewares
@@ -36,7 +37,7 @@ router.post(
 
 router.post(
   "/user/register",
-  AuthValidator.validateRegisterUserAccount,
+  UserValidator.validateRegisterUserAccount,
   Hasher.hashPasswordMiddleware,
   AuthController.RegisterUserAccount
 );

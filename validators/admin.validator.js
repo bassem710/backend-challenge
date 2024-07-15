@@ -43,25 +43,6 @@ class AdminValidator {
     joiErrorHandler(schema, req);
     next();
   });
-
-  // Validate register new user account fields
-  static validateRegisterUserAccount = asyncHandler(async (req, res, next) => {
-    const schema = Joi.object({
-      name: Joi.string().min(2).max(255).required(),
-      email: Joi.string().email().required(),
-      password: Joi.string().min(8).max(255).required().messages({
-        "string.min": "Password must be at least 8 characters long",
-      }),
-      confirmPassword: Joi.string()
-        .valid(Joi.ref("password"))
-        .required()
-        .messages({
-          "any.only": "Confirm password must match new password",
-        }),
-    }).unknown();
-    joiErrorHandler(schema, req);
-    next();
-  });
 }
 
 module.exports = AdminValidator;
