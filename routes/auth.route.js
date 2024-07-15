@@ -15,10 +15,23 @@ const { allowedTo } = require("../middlewares/authorization.middleware.js");
 router.post("/login", AuthController.login);
 
 router.post(
-  "/verify",
-  AuthValidator.validateVerifyAccount,
+  "/admin/verify",
+  AuthValidator.validateVerifyAdminAccount,
   Hasher.hashPasswordMiddleware,
-  AuthController.AccountVerification
+  AuthController.AdminAccountVerification
+);
+
+router.post(
+  "/user/verify",
+  AuthValidator.validateVerifyUserAccount,
+  AuthController.UserAccountVerification
+);
+
+router.post(
+  "/user/register",
+  AuthValidator.validateRegisterUserAccount,
+  Hasher.hashPasswordMiddleware,
+  AuthController.RegisterUserAccount
 );
 
 router.delete(

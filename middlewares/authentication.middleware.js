@@ -13,12 +13,12 @@ exports.protect = asyncHandler(async (req, res, next) => {
   const decoded = await JwtHandler.verifyToken(token);
   req.decoded = decoded;
   // Query the database to find the user based on ID
-  const { rowCount: found, rows: [user] } = await pool.query(
-    `SELECT * FROM "user" WHERE id = $1`,
-    [req.decoded.id]
-  );
+  const {
+    rowCount: found,
+    rows: [user],
+  } = await pool.query(`SELECT * FROM "user" WHERE id = $1`, [req.decoded.id]);
   // Check if user is not verified
-  if (!user.password)
+  if (!user.password || !user.is_verified)
     // password is null at creating new user
     return next(new ApiError("Please verify your account", 403));
   // If no user found or token is not identical to user's token

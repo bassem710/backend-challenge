@@ -8,7 +8,7 @@ const EmailHandler = require("../utils/email.handler");
 const JwtHandler = require("../utils/jwtHandler");
 const Hasher = require("../utils/hasher");
 
-const { USER } = require("../utils/constants");
+const { USER, SUPER_ADMIN, ADMIN } = require("../utils/constants");
 
 class AuthController {
   // @desc    login
@@ -78,31 +78,83 @@ class AuthController {
     });
   });
 
-  // @desc    Account verification
-  // @route   POST /auth/verify
+  // @desc    Admin account verification
+  // @route   POST /auth/admin/verify
   // @access  Public
-  static AccountVerification = asyncHandler(async (req, res, next) => {
+  static AdminAccountVerification = asyncHandler(async (req, res, next) => {
     const { code, password } = req.body;
     // Hash the provided code
     const hashedCode = await Hasher.hashCode(code);
     // Query to find user by verification code
-    const verificationQuery = `SELECT * FROM "user" WHERE verification_code = $1;`;
+    const verificationQuery = `SELECT * FROM "user" WHERE verification_code = $1 AND (role = $2 OR role = $3);`;
     const {
       rowCount: userFound,
       rows: [user],
-    } = await pool.query(verificationQuery, [hashedCode]);
+    } = await pool.query(verificationQuery, [hashedCode, SUPER_ADMIN, ADMIN]);
     // If user is not found or not verified
     if (!userFound)
       return next(new ApiError("Invalid verification code!", 401));
     // Update user password & remove verification code
     await pool.query(
-      `UPDATE "user" SET password = $1, verification_code = NULL WHERE id = $2;`,
+      `UPDATE "user" SET password = $1, verification_code = NULL, is_verified = true WHERE id = $2;`,
       [password, user.id]
     );
     // Return success message
     return res.status(200).json({
       success: true,
       message: `Account verified successfully`,
+    });
+  });
+
+  // @desc    User account verification
+  // @route   POST /auth/user/verify
+  // @access  Public
+  static UserAccountVerification = asyncHandler(async (req, res, next) => {
+    const { code } = req.body;
+    // Hash the provided code
+    const hashedCode = await Hasher.hashCode(code);
+    // Query to find user by verification code
+    const verificationQuery = `SELECT * FROM "user" WHERE verification_code = $1 AND role = $2;`;
+    const {
+      rowCount: userFound,
+      rows: [user],
+    } = await pool.query(verificationQuery, [hashedCode, USER]);
+    // If user is not found or not verified
+    if (!userFound)
+      return next(new ApiError("Invalid verification code!", 401));
+    // Update user password & remove verification code
+    await pool.query(
+      `UPDATE "user" SET verification_code = NULL, is_verified = true WHERE id = $1;`,
+      [user.id]
+    );
+    // Return success message
+    return res.status(200).json({
+      success: true,
+      message: `Account verified successfully`,
+    });
+  });
+
+  // @desc    Register new user account
+  // @route   POST /auth/user/register
+  // @access  Public
+  static RegisterUserAccount = asyncHandler(async (req, res, next) => {
+    const { name, email, password } = req.body;
+    // Generate verification code
+    const { code, hashedCode } = await CodeGenerator.generateHashedCode(
+      `"user"`,
+      "verification_code"
+    );
+    // Create new user query
+    const registerQuery = `INSERT INTO "user" (name, email, password, verification_code, role) VALUES ($1, $2, $3, $4, $5) RETURNING id, name, email, role;`;
+    // Execute the query
+    await Promise.all([
+      pool.query(registerQuery, [name, email, password, hashedCode, USER]),
+      EmailHandler.userAccountMail(code, email),
+    ]);
+    return res.status(201).json({
+      success: true,
+      message:
+        "Verification email sent to your email. Please check your inbox.",
     });
   });
 
