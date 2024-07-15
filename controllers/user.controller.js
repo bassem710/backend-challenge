@@ -22,7 +22,7 @@ class UserController {
     } = await pool.query(
       `
       SELECT 
-        id, name, email, is_verified
+        id, name, email, is_verified, created_at
       FROM
         "user"
       WHERE
