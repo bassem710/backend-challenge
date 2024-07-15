@@ -9,6 +9,7 @@ CREATE TABLE "user" (
   verification_code VARCHAR(255),
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   token varchar(1000),
+  is_verified BOOLEAN DEFAULT FALSE,
   UNIQUE(email)
 );
 
