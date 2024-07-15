@@ -11,6 +11,13 @@ const { protect } = require("../middlewares/authentication.middleware.js");
 const { allowedTo } = require("../middlewares/authorization.middleware.js");
 
 router.get(
+  "/",
+  protect,
+  allowedTo(SUPER_ADMIN, ADMIN),
+  UserController.getUsers
+);
+
+router.get(
   "/:id",
   protect,
   allowedTo(SUPER_ADMIN, ADMIN),
