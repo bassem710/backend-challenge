@@ -139,6 +139,35 @@ class UserController {
     });
   });
 
+  static getTopUsersLoginFrequency = asyncHandler(async (req, res, next) => {
+    const query = `
+      SELECT 
+        ul.user_id AS id,
+        u.id,
+        u.name,
+        u.email,
+        CAST(COUNT(*) AS INTEGER) AS count 
+      FROM
+        login_logs ul
+      LEFT JOIN
+        "user" u ON u.id = ul.user_id
+      GROUP BY
+        ul.user_id,
+        u.id,
+        u.name,
+        u.email
+      ORDER BY
+        count DESC
+      LIMIT 3;
+    `;
+    const { rows: topUsers } = await pool.query(query);
+    // Response
+    res.status(200).json({
+      success: true,
+      data: topUsers,
+    });
+  });
+
   // @desc    Update user data by id
   // @route   PATCH /user/:id
   // @access  Private (All based on token role)

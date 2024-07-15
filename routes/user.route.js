@@ -19,6 +19,13 @@ router.get(
 );
 
 router.get(
+  "/top3",
+  protect,
+  allowedTo(SUPER_ADMIN, ADMIN),
+  UserController.getTopUsersLoginFrequency
+);
+
+router.get(
   "/:id",
   protect,
   allowedTo(SUPER_ADMIN, ADMIN),
