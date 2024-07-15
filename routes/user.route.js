@@ -26,6 +26,13 @@ router.get(
 );
 
 router.get(
+  "/inactive",
+  protect,
+  allowedTo(SUPER_ADMIN, ADMIN),
+  UserController.getInactiveUsers
+);
+
+router.get(
   "/:id",
   protect,
   allowedTo(SUPER_ADMIN, ADMIN),

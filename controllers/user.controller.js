@@ -171,6 +171,53 @@ class UserController {
     });
   });
 
+  // @desc    Get inactive users within the last hour
+  // @route   GET /user/inactive
+  // @access  Private (Super Admin & Admin)
+  static getInactiveUsers = asyncHandler(async (req, res, next) => {
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+    // Query to get users who have logged in within the last hour
+    const activeUsersQuery = `
+      SELECT DISTINCT user_id
+      FROM login_logs
+      WHERE date > $1;
+    `;
+    const { rows: activeUsersRows } = await pool.query(activeUsersQuery, [
+      oneHourAgo,
+    ]);
+    const activeUserIds = activeUsersRows.map((row) => row.user_id);
+    // If no users have logged in within the last hour, return all users
+    if (activeUserIds.length === 0) {
+      const allUsersQuery = `
+        SELECT id, name, email
+        FROM "user"
+        WHERE role = $1;
+      `;
+      const { rows: data } = await pool.query(allUsersQuery, [USER]);
+      return res.status(200).json({
+        success: true,
+        data,
+      });
+    }
+    // Query to get users who haven't logged in within the last hour
+    const inactiveUsersQuery = `
+      SELECT 
+        id, name, email
+      FROM 
+        "user"
+      WHERE
+        role = $1 AND id NOT IN (${activeUserIds.join(", ")});
+    `;
+    const { rows: inactiveUsers } = await pool.query(inactiveUsersQuery, [
+      USER,
+    ]);
+    // Response
+    res.status(200).json({
+      success: true,
+      data: inactiveUsers,
+    });
+  });
+
   // @desc    Update user data by id
   // @route   PATCH /user/:id
   // @access  Private (All based on token role)
