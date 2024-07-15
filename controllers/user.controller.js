@@ -138,6 +138,30 @@ class UserController {
       data,
     });
   });
+
+  // @desc    Delete user by id
+  // @route   DELETE /user/:id
+  // @access  Private (Super Admin & Admin)
+  static deleteUser = asyncHandler(async (req, res, next) => {
+    const userId = req.params.id;
+    const { rowCount: deleted } = await pool.query(
+      `
+      DELETE FROM
+        "user"
+      WHERE
+        id = $1 AND role = $2
+      ;
+      `,
+      [userId, USER]
+    );
+    // Check user
+    if (!deleted) return next(new ApiError("User not found", 404));
+    // Response
+    res.status(200).json({
+      success: true,
+      message: "User deleted successfully",
+    });
+  });
 }
 
 module.exports = UserController;

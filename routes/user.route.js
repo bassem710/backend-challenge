@@ -24,4 +24,11 @@ router.get(
   UserController.getUser
 );
 
+router.delete(
+  "/:id",
+  protect,
+  allowedTo(SUPER_ADMIN, ADMIN),
+  UserController.deleteUser
+);
+
 module.exports = router;
