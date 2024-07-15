@@ -12,6 +12,13 @@ const Hasher = require("../utils/hasher.js");
 const { protect } = require("../middlewares/authentication.middleware.js");
 const { allowedTo } = require("../middlewares/authorization.middleware.js");
 
+router.get(
+  "/getMe",
+  protect,
+  allowedTo(SUPER_ADMIN, ADMIN, USER),
+  AuthController.getMe
+);
+
 router.post("/login", AuthController.login);
 
 router.post(

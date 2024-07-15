@@ -11,6 +11,35 @@ const Hasher = require("../utils/hasher");
 const { USER, SUPER_ADMIN, ADMIN } = require("../utils/constants");
 
 class AuthController {
+  // @desc    Get logged in user data
+  // @route   GET /auth/get me
+  // @access  Private (All)
+  static getMe = asyncHandler(async (req, res, next) => {
+    const userId = req.user.id;
+    const { rows: [data] } = await pool.query(
+      `
+      SELECT 
+        id, name, email, role, token
+      FROM
+        "user"
+      WHERE
+        id = $1
+      ;
+      `,
+      [userId]
+    );
+    res.status(200).json({
+      success: true,
+      userData: {
+        id: data.id,
+        name: data.name,
+        email: data.email,
+      },
+      role: data.role,
+      token: data.token,
+    });
+  });
+
   // @desc    login
   // @route   POST /auth/login
   // @access  Public
